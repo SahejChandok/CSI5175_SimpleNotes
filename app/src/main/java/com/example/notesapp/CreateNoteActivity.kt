@@ -1,11 +1,10 @@
 package com.example.notesapp
 
 import android.app.Notification.Style
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
+import android.text.*
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
@@ -14,6 +13,10 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.toSpannable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class CreateNoteActivity: AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
@@ -83,6 +86,27 @@ class CreateNoteActivity: AppCompatActivity() {
             val spannableStr = SpannableStringBuilder(body.text)
             body.textAlignment = textAlignment
             body.text = spannableStr
+        }
+        submitButton.setOnClickListener {
+            createNote()
+            val intent = Intent(this, MainActivity::class.java)
+            finish()
+            startActivity(intent)
+        }
+    }
+
+    override fun onDestroy() {
+        createNote()
+        super.onDestroy()
+    }
+
+    private fun createNote() {
+        if(body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty())  {
+            val str = SpannableStringBuilder(body.text)
+            val note = Note(null, title.text.toString(), Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE))
+            GlobalScope.launch(Dispatchers.IO) {
+                appDatabase.noteDao().insert(note)
+            }
         }
     }
 
