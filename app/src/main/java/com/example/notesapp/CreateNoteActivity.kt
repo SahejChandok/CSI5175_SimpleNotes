@@ -1,5 +1,6 @@
 package com.example.notesapp
 
+import android.app.Notification.Style
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -10,6 +11,7 @@ import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -18,14 +20,15 @@ class CreateNoteActivity: AppCompatActivity() {
     private lateinit var title: TextView
     private lateinit var body: TextView
     private lateinit var submitButton: Button
-    private lateinit var boldBtn: Button
-    private lateinit var italicBtn: Button
-    private lateinit var underlineBtn: Button
-    private lateinit var centerAlignButton: Button
-    private lateinit var leftAlignButton: Button
-    private lateinit var rightAlignButton: Button
+    private lateinit var boldBtn: ImageButton
+    private lateinit var italicBtn: ImageButton
+    private lateinit var underlineBtn: ImageButton
+    private lateinit var centerAlignButton: ImageButton
+    private lateinit var leftAlignButton: ImageButton
+    private lateinit var rightAlignButton: ImageButton
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_create_note)
         appDatabase = AppDatabase.getDatabase(this)
         title = findViewById(R.id.create_note_title)
         body = findViewById(R.id.create_note_body)
