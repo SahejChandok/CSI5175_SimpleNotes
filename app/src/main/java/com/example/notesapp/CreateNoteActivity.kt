@@ -1,5 +1,6 @@
 package com.example.notesapp
 
+import android.app.Activity
 import android.app.Notification.Style
 import android.content.Intent
 import android.graphics.Typeface
@@ -8,18 +9,67 @@ import android.text.*
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.toSpannable
+import com.example.notesapp.databinding.ActivityCreateNoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.logging.SimpleFormatter
 
 class CreateNoteActivity: AppCompatActivity() {
-    private lateinit var appDatabase: AppDatabase
+    private lateinit var binding: ActivityCreateNoteBinding
+    private lateinit var note:Note
+    private lateinit var old_note: Note
+    var isUpdate = false
+
+
+    override fun onCreate(savedInstanceState: Bundle?){
+        super.onCreate(savedInstanceState)
+
+
+        binding = ActivityCreateNoteBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        try{
+            old_note=intent.getSerializableExtra("current_note") as Note
+            binding.createNoteTitle.setText(old_note.title)
+            binding.createNoteBody.setText(old_note.note)
+
+            isUpdate= true
+        }catch ( e : Exception){
+            e.printStackTrace()
+        }
+        binding.imgCheck.setOnClickListener{
+            val title= binding.createNoteTitle.text.toString()
+            val note_desc= binding.createNoteBody.text.toString()
+            if (title.isNotEmpty() || note_desc.isNotEmpty()){
+                val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+                 if(isUpdate){
+                    note = Note(
+                        old_note.id, title, note_desc, formatter.format(Date())
+                    )
+                }else{
+                    note = Note(
+                        null, title, note_desc, formatter.format(Date())
+                    )
+                }
+                val intent= Intent()
+                intent.putExtra("note", note)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+
+            }else{
+                Toast.makeText(this@CreateNoteActivity, "Please enter some data", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+        }
+
+    }
+    /*private lateinit var appDatabase: AppDatabase
     private lateinit var title: TextView
     private lateinit var body: TextView
     private lateinit var submitButton: Button
@@ -29,6 +79,7 @@ class CreateNoteActivity: AppCompatActivity() {
     private lateinit var centerAlignButton: ImageButton
     private lateinit var leftAlignButton: ImageButton
     private lateinit var rightAlignButton: ImageButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_note)
@@ -105,9 +156,9 @@ class CreateNoteActivity: AppCompatActivity() {
             val str = SpannableStringBuilder(body.text)
             val note = Note(null, title.text.toString(), Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE))
             GlobalScope.launch(Dispatchers.IO) {
-                appDatabase.noteDao().insert(note)
+                appDatabase.getNoteDao().insert(note)
             }
         }
-    }
+    }*/
 
 }
