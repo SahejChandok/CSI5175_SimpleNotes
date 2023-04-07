@@ -6,28 +6,24 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(entities = [Note::class], version = 1, exportSchema = false)
-abstract class AppDatabase: RoomDatabase() {
-    abstract fun noteDao(): NoteDao
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun getNoteDao(): NoteDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
         fun getDatabase(context: Context): AppDatabase{
-            val temp = INSTANCE
-            if(temp != null) {
-                return temp
-            }
-            // if no database initialised then create one
-            synchronized(this) {
+
+            return INSTANCE ?: synchronized(this){
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).allowMainThreadQueries().build()
-                INSTANCE = instance
-                return instance
+                ).build()
+                INSTANCE= instance
+                instance
             }
         }
+
     }
 }
