@@ -8,16 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#F3F0F0</color>
     <color name="gray">#FF6C6868</color>
-    <color name="ColorText">#606570</color>
     <color name="colorPrimaryDark">#10141C</color>
     <color name="colorPrimary">#171C26</color>
-    <color name="ColorLightBlack">#171C26</color>
-    <color name="ColorWhite">#ffffff</color>
-
-    <color name="NoteColor1">#FF6263</color>
-    <color name="NoteColor2">#23C4ED</color>
-    <color name="NoteColor3">#38CC77</color>
-    <color name="NoteColor4">#6F307A</color>
-    <color name="NoteColor5">#318801</color>
-    <color name="NoteColor6">#034500</color>
 </resources>

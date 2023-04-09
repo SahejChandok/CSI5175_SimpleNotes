@@ -15,12 +15,63 @@
         <EditText
             android:id="@+id/create_note_title"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Title"
             android:gravity="start"
             android:inputType="textMultiLine" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginVertical="10sp"
+            android:gravity="fill_horizontal"
+            >
+
+            <ImageButton
+                android:id="@+id/bold_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/bold" />
+            <ImageButton
+                android:id="@+id/italic_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/italic_font" />
+            <ImageButton
+                android:id="@+id/underline_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/underline" />
+            <ImageButton
+                android:id="@+id/right_align_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/align_right" />
+            <ImageButton
+                android:id="@+id/center_align_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/center" />
+            <ImageButton
+                android:id="@+id/left_align_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/align_left" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/create_note_body"
@@ -28,25 +79,21 @@
             android:layout_height="400sp"
             android:layout_marginTop="15sp"
             android:ems="10"
-            android:gravity="start"
             android:hint="Add your notes here"
+            android:gravity="start"
             android:inputType="textMultiLine" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center">
-
-            <ImageView
-                android:id="@+id/img_check"
+            <Button
+                android:id="@+id/create_note_submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
                 android:layout_marginTop="25sp"
-                android:layout_marginEnd="12dp"
                 android:gravity="center"
-                android:text="Save"
-                app:srcCompat="@drawable/ic_check" />
+                android:text="Save" />
         </LinearLayout>
     </LinearLayout>
 
