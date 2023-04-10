@@ -16,7 +16,7 @@ interface NoteDao {
     suspend fun findById(id: Int): Note
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(note: Note)
+    suspend fun insert(note: Note): Long
 
     @Delete
     suspend fun remove(note: Note)
