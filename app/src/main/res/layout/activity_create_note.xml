@@ -79,6 +79,22 @@
                 android:scaleType="fitCenter"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/image" />
+
+            <ImageButton
+                android:id="@+id/checklist_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_checkbox" />
+
+            <ImageButton
+                android:id="@+id/strike_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_box_finished" />
         </LinearLayout>
 
         <EditText
@@ -89,7 +105,8 @@
             android:ems="10"
             android:hint="Add your notes here"
             android:gravity="start"
-            android:inputType="textMultiLine" />
+            android:inputType="textMultiLine"
+            android:maxLength="@integer/material_motion_duration_long_1"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
