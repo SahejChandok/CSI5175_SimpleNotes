@@ -1,17 +1,24 @@
 package com.example.notesapp
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.Html
+import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.text.style.BackgroundColorSpan
+import android.text.style.BulletSpan
+import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
@@ -20,8 +27,10 @@ import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.core.text.getSpans
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +48,8 @@ class CreateNoteActivity : AppCompatActivity() {
     private lateinit var centerAlignButton: ImageButton
     private lateinit var leftAlignButton: ImageButton
     private lateinit var rightAlignButton: ImageButton
+    private lateinit var todoListButton: ImageButton
+    private lateinit var todoCheckButton: ImageButton
     private lateinit var pushCheckBox: CheckBox
     private lateinit var imageButton: ImageButton
     private var noteImages = arrayListOf<NoteImage>()
@@ -68,6 +79,8 @@ class CreateNoteActivity : AppCompatActivity() {
 
     }
 
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val onClickImgClose: (NoteImage, Int) -> Unit = { noteImage: NoteImage, position: Int ->
@@ -89,6 +102,8 @@ class CreateNoteActivity : AppCompatActivity() {
         centerAlignButton = findViewById(R.id.center_align_button)
         leftAlignButton = findViewById(R.id.left_align_button)
         rightAlignButton = findViewById(R.id.right_align_button)
+        todoListButton = findViewById(R.id.checklist_button)
+        todoCheckButton = findViewById(R.id.strike_button)
         pushCheckBox = findViewById(R.id.add_note_to_push)
         imageButton = findViewById(R.id.attach_image_button)
         body.addTextChangedListener(bodyTextWatcher)
@@ -147,6 +162,48 @@ class CreateNoteActivity : AppCompatActivity() {
             body.textAlignment = textAlignment
             body.text = spannableStr
         }
+
+        todoCheckButton.setOnClickListener {
+            var str = SpannableStringBuilder(body.text)
+            str.setSpan(
+                StrikethroughSpan(),
+                body.selectionStart,
+                body.selectionEnd,
+                0
+            )
+            str.setSpan(
+                BackgroundColorSpan(Color.BLUE),
+                body.selectionStart,
+                body.selectionEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            body.text = str
+        }
+
+        todoListButton.setOnClickListener {
+
+            var bulletStr = SpannableStringBuilder(body.text)
+            bulletStr.setSpan(
+                BulletSpan(40, Color.BLUE,20),
+                body.selectionStart,
+                body.selectionEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            body.text = bulletStr
+        }
+//        todoListButton.setOnClickListener{
+//            var str = SpannableStringBuilder(body.text)
+//            var bulletHollow= "\u25CB "
+//            var result = str.contains(bulletHollow)
+//            if (result){
+//                val n = 2
+//                body.text = str.substring(n)
+//            } else {
+//                body.text = bulletHollow + str
+//            }
+//
+//        }
+
         submitButton.setOnClickListener {
             createNote()
             val intent = Intent(this, MainActivity::class.java)
