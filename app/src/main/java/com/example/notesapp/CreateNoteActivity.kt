@@ -205,7 +205,7 @@ class CreateNoteActivity : AppCompatActivity() {
                         val img = noteImages[0]
                         val imageStream =
                             ctx.contentResolver.openInputStream(Uri.parse(img.uri.toString()))
-                        val imgBitmap = BitmapFactory.decodeStream(imageStream))
+                        val imgBitmap = BitmapFactory.decodeStream(imageStream)
                         builder.setLargeIcon(imgBitmap)
                     }
                     val notification = builder.build()
