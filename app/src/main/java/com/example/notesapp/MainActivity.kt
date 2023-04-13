@@ -21,7 +21,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(),
-    NotesAdapter.NotesClickListener, PopupMenu.OnMenuItemClickListener{
+    NotesAdapter.NotesClickListener, PopupMenu.OnMenuItemClickListener {
     lateinit var appDatabase: AppDatabase
     private val REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 101
     private lateinit var binding: ActivityMainBinding
@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity(),
     lateinit var selectedNote: Note
     private val updateNote =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-
             if (result.resultCode == Activity.RESULT_OK) {
                 val note = result.data?.getSerializableExtra("note") as? Note
                 if (note != null) {
@@ -42,14 +41,9 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         appDatabase = AppDatabase.getDatabase(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         initUI()
-        val addButton = findViewById<FloatingActionButton>(R.id.add_notes)
-        addButton.setOnClickListener {
-            val intent = Intent(this, CreateNoteActivity::class.java)
-            startActivity(intent)
-        }
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.READ_EXTERNAL_STORAGE

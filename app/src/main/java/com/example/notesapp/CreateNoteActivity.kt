@@ -1,6 +1,7 @@
 package com.example.notesapp
 
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -33,8 +34,7 @@ import kotlin.collections.ArrayList
 class CreateNoteActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
     private lateinit var binding: ActivityCreateNoteBinding
-    private lateinit var note: Note
-    private lateinit var old_note: Note
+    private var old_note: Note? = null
     var isUpdate = false
     var changesSaved = false
     private lateinit var title: TextView
@@ -92,17 +92,18 @@ class CreateNoteActivity : AppCompatActivity() {
     @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
+        appDatabase = AppDatabase.getDatabase(this)
         super.onCreate(savedInstanceState)
         binding = ActivityCreateNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
         try {
-            old_note = intent.getSerializableExtra("current_note") as Note
-            binding.createNoteTitle.setText(old_note.title)
-            binding.createNoteBody.setText(old_note.note)
-            isUpdate = true
-            old_note.id?.let {
+            old_note = (intent.getSerializableExtra("current_note") as? Note)!!
+            old_note!!.id?.let {
                 noteImages =
                     appDatabase.noteImageDao().getAllForNote(it) as ArrayList<NoteImage>
+                binding.createNoteTitle.setText(old_note!!.title)
+                binding.createNoteBody.setText(old_note!!.note)
+                isUpdate = true
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -218,8 +219,12 @@ class CreateNoteActivity : AppCompatActivity() {
             body.text = bulletStr
         }
         submitButton.setOnClickListener {
-            createNote()
+           val note = createNote()
             val intent = Intent(this, MainActivity::class.java)
+            if(note !=null) {
+                intent.putExtra("note", note)
+                setResult(Activity.RESULT_OK, intent)
+            }
             finish()
             startActivity(intent)
         }
@@ -242,14 +247,17 @@ class CreateNoteActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         if(!changesSaved) {
-            createNote()
-
+            val data = Intent()
+            val note = createNote()
+            if(note != null) {
+                data.putExtra("note", note)
+                setResult(Activity.RESULT_OK, data)
+            }
         }
-
         super.onDestroy()
     }
 
-    private fun createNote() {
+    private fun createNote(): Note? {
         if (body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty()) {
             val str = SpannableStringBuilder(body.text)
             val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
@@ -263,8 +271,8 @@ class CreateNoteActivity : AppCompatActivity() {
             var noteId = 0L
             GlobalScope.launch(Dispatchers.IO) {
                 if (isUpdate) {
-                    appDatabase.noteDao().update(old_note.id, note.title, note.note)
-                    noteId = old_note.id?.toLong() ?: 0L
+                    appDatabase.noteDao().update(old_note!!.id, note.title, note.note)
+                    noteId = old_note!!.id?.toLong() ?: 0L
                 } else {
                     noteId = appDatabase.noteDao().insert(note)
                 }
@@ -296,6 +304,9 @@ class CreateNoteActivity : AppCompatActivity() {
                 }
             }
             changesSaved = true
+            note.id = noteId.toInt()
+            return note
         }
+        return null
     }
 }
