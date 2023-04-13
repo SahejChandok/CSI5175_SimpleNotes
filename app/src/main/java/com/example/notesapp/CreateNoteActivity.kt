@@ -221,14 +221,7 @@ class CreateNoteActivity : AppCompatActivity() {
             body.text = bulletStr
         }
         submitButton.setOnClickListener {
-           val note = createNote()
-            val intent = Intent(this, MainActivity::class.java)
-            if(note !=null) {
-                intent.putExtra("note", note)
-                setResult(Activity.RESULT_OK, intent)
-            }
-            finish()
-            startActivity(intent)
+          createNote()
         }
         createNotificationChannel()
     }
@@ -247,19 +240,7 @@ class CreateNoteActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(mChannel)
     }
 
-    override fun onDestroy() {
-        if(!changesSaved) {
-            val data = Intent()
-            val note = createNote()
-            if(note != null) {
-                data.putExtra("note", note)
-                setResult(Activity.RESULT_OK, data)
-            }
-        }
-        super.onDestroy()
-    }
-
-    private fun createNote(): Note? {
+    private fun createNote() {
         if (body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty()) {
             val str = SpannableStringBuilder(body.text)
             val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
@@ -278,14 +259,14 @@ class CreateNoteActivity : AppCompatActivity() {
                 } else {
                     noteId = appDatabase.noteDao().insert(note)
                 }
-                if (noteImages.isNotEmpty()) {
+                if (noteId != -1L && noteImages.isNotEmpty()) {
                     appDatabase.noteImageDao().insert(noteImages)
                 }
-                if (imageIdsToBeRemoved.isNotEmpty()) {
+                if (noteId != -1L && imageIdsToBeRemoved.isNotEmpty()) {
                     appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
                 }
                 val content = Html.fromHtml(note.note.toString(), Html.FROM_HTML_MODE_LEGACY)
-                if (noteId != 0L && pushCheckBox.isChecked) {
+                if (noteId != -1L && pushCheckBox.isChecked) {
                     val bigTextStyle = NotificationCompat.BigTextStyle()
                         .setBigContentTitle(note.title)
                         .bigText(content)
@@ -304,11 +285,14 @@ class CreateNoteActivity : AppCompatActivity() {
                     val notification = builder.build()
                     notificationManager.notify(noteId.toInt(), notification)
                 }
+                val intent = Intent(ctx, MainActivity::class.java)
+                if(noteId != -1L) {
+                    intent.putExtra("note", note)
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
+                }
             }
-            changesSaved = true
-            note.id = noteId.toInt()
-            return note
         }
-        return null
+
     }
 }
