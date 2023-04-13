@@ -1,6 +1,9 @@
 package com.example.notesapp.adapter
 
 import android.content.Context
+import android.text.Html
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,7 +49,8 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
         val currentNote= NotesList[position]
         holder.title.text= currentNote.title
         holder.title.isSelected= true
-        holder.nnote.text= currentNote.note
+        holder.nnote.text= SpannableString(Html.fromHtml(currentNote.note,
+        Html.FROM_HTML_MODE_LEGACY))
         holder.date.text= currentNote.date
         holder.date.isSelected = true
         holder.notes_layout.setCardBackgroundColor(holder.itemView.resources.getColor(randomColor(), null))

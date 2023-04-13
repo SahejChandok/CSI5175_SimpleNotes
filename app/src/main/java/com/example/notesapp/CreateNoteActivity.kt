@@ -102,7 +102,9 @@ class CreateNoteActivity : AppCompatActivity() {
                 noteImages =
                     appDatabase.noteImageDao().getAllForNote(it) as ArrayList<NoteImage>
                 binding.createNoteTitle.setText(old_note!!.title)
-                binding.createNoteBody.setText(old_note!!.note)
+                binding.createNoteBody.setText(
+                    SpannableString(Html.fromHtml(old_note!!.note,
+                        Html.FROM_HTML_MODE_LEGACY)))
                 isUpdate = true
             }
         } catch (e: Exception) {
