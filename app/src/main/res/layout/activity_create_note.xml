@@ -15,7 +15,7 @@
         <EditText
             android:id="@+id/create_note_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:ems="10"
             android:hint="Title"
             android:gravity="start"
@@ -103,7 +103,6 @@
             android:layout_height="400sp"
             android:layout_marginTop="10sp"
             android:ems="10"
-            android:hint="Add your notes here"
             android:gravity="start"
             android:inputType="textMultiLine"
             android:maxLength="@integer/material_motion_duration_long_1"/>
