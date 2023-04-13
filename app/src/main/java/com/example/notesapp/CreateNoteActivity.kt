@@ -36,6 +36,7 @@ class CreateNoteActivity : AppCompatActivity() {
     private lateinit var note: Note
     private lateinit var old_note: Note
     var isUpdate = false
+    var changesSaved = false
     private lateinit var title: TextView
     private lateinit var body: TextView
     private lateinit var submitButton: Button
@@ -240,7 +241,11 @@ class CreateNoteActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        createNote()
+        if(!changesSaved) {
+            createNote()
+
+        }
+
         super.onDestroy()
     }
 
@@ -290,6 +295,7 @@ class CreateNoteActivity : AppCompatActivity() {
                     notificationManager.notify(noteId.toInt(), notification)
                 }
             }
+            changesSaved = true
         }
     }
 }
