@@ -49,8 +49,10 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
         val currentNote= NotesList[position]
         holder.title.text= currentNote.title
         holder.title.isSelected= true
-        holder.nnote.text= SpannableString(Html.fromHtml(currentNote.note,
-        Html.FROM_HTML_MODE_LEGACY))
+        if(currentNote.note != null) {
+            holder.nnote.text= SpannableString(Html.fromHtml(currentNote.note,
+                Html.FROM_HTML_MODE_LEGACY))
+        }
         holder.date.text= currentNote.date
         holder.date.isSelected = true
         holder.notes_layout.setCardBackgroundColor(holder.itemView.resources.getColor(randomColor(), null))

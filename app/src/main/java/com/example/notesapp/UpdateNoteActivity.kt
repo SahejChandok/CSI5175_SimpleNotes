@@ -13,6 +13,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.toSpannable
 import com.example.notesapp.databinding.ActivityCreateNoteBinding
+import com.example.notesapp.databinding.ActivityUpdateNoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -21,7 +22,7 @@ import java.util.*
 import java.util.logging.SimpleFormatter
 
 class UpdateNoteActivity: AppCompatActivity() {
-    private lateinit var binding: ActivityCreateNoteBinding
+    private lateinit var binding: ActivityUpdateNoteBinding
     private lateinit var note:Note
     private lateinit var old_note: Note
     var isUpdate = false
@@ -30,16 +31,15 @@ class UpdateNoteActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-
-        binding = ActivityCreateNoteBinding.inflate(layoutInflater)
+        binding = ActivityUpdateNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
         submitButton = findViewById(R.id.create_note_submit)
 
         try{
             old_note=intent.getSerializableExtra("current_note") as Note
             binding.createNoteTitle.setText(old_note.title.toString())
-            binding.createNoteBody.setText(old_note.note.toString())
-
+            val body = SpannableString(Html.fromHtml(old_note.note, Html.FROM_HTML_MODE_LEGACY))
+            binding.createNoteBody.setText(body)
             isUpdate= true
         }catch ( e : Exception){
             e.printStackTrace()
