@@ -1,6 +1,7 @@
 package com.example.notesapp
 
-import android.annotation.SuppressLint
+
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -11,34 +12,31 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.Html
-import android.text.Spannable
-import android.text.SpannableStringBuilder
-import android.text.TextWatcher
-import android.text.style.BackgroundColorSpan
-import android.text.style.BulletSpan
-import android.text.style.StrikethroughSpan
-import android.text.style.StyleSpan
-import android.text.style.UnderlineSpan
+import android.text.*
+import android.text.style.*
 import android.view.View
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
-import androidx.core.text.getSpans
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.notesapp.databinding.ActivityCreateNoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+
 
 class CreateNoteActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
+    private lateinit var binding: ActivityCreateNoteBinding
+    private lateinit var old_note: Note
+    var isUpdate = false
+    var changesSaved = false
     private lateinit var title: TextView
     private lateinit var body: TextView
     private lateinit var submitButton: Button
@@ -73,16 +71,32 @@ class CreateNoteActivity : AppCompatActivity() {
         }
 
         override fun afterTextChanged(bodyText: Editable?) {
-            submitButton.isEnabled = bodyText?.isNotEmpty() == true
+            submitButton.isEnabled =
+                (bodyText?.isNotEmpty() == true && title.text.isNotEmpty())
 
         }
+    }
+    private val titleTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        }
 
+        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        }
+
+        override fun afterTextChanged(titleText: Editable?) {
+            submitButton.isEnabled =
+                titleText?.isNotEmpty() == true && body.text.isNotEmpty()
+        }
     }
 
-    @SuppressLint("SetTextI18n")
+    @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
+        appDatabase = AppDatabase.getDatabase(this)
         super.onCreate(savedInstanceState)
+        binding = ActivityCreateNoteBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         val onClickImgClose: (NoteImage, Int) -> Unit = { noteImage: NoteImage, position: Int ->
             val imgId = noteImage.id
             if (imgId != null) {
@@ -107,6 +121,7 @@ class CreateNoteActivity : AppCompatActivity() {
         pushCheckBox = findViewById(R.id.add_note_to_push)
         imageButton = findViewById(R.id.attach_image_button)
         body.addTextChangedListener(bodyTextWatcher)
+        title.addTextChangedListener(titleTextWatcher)
         imagesRecyclerView = findViewById(R.id.images_view)
         imagesRecyclerView.setHasFixedSize(true)
         noteImagesAdapter = NoteImagesAdapter(this, noteImages, onClickImgClose)
@@ -181,34 +196,19 @@ class CreateNoteActivity : AppCompatActivity() {
         }
 
         todoListButton.setOnClickListener {
-
             var bulletStr = SpannableStringBuilder(body.text)
-            bulletStr.setSpan(
-                BulletSpan(40, Color.BLUE,20),
-                body.selectionStart,
-                body.selectionEnd,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                bulletStr.setSpan(
+                    BulletSpan(40, Color.BLUE, 20),
+                    body.selectionStart,
+                    body.selectionEnd,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
             body.text = bulletStr
         }
-//        todoListButton.setOnClickListener{
-//            var str = SpannableStringBuilder(body.text)
-//            var bulletHollow= "\u25CB "
-//            var result = str.contains(bulletHollow)
-//            if (result){
-//                val n = 2
-//                body.text = str.substring(n)
-//            } else {
-//                body.text = bulletHollow + str
-//            }
-//
-//        }
-
         submitButton.setOnClickListener {
-            createNote()
-            val intent = Intent(this, MainActivity::class.java)
-            finish()
-            startActivity(intent)
+          createNote()
         }
         createNotificationChannel()
     }
@@ -227,29 +227,32 @@ class CreateNoteActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(mChannel)
     }
 
-    override fun onDestroy() {
-        createNote()
-        super.onDestroy()
-    }
-
     private fun createNote() {
-        if (body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty()) {
             val str = SpannableStringBuilder(body.text)
+            val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
             val note = Note(
                 null,
                 title.text.toString(),
-                Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE)
+                Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),
+                formatter.format(Date())
             )
             val ctx = this
             var noteId = 0L
             GlobalScope.launch(Dispatchers.IO) {
-                noteId = appDatabase.noteDao().insert(note)
-                if (noteImages.isNotEmpty()) {
+                /*if (isUpdate) {
+                    appDatabase.noteDao().update(old_note!!.id, note.title, note.note)
+                    noteId = old_note!!.id?.toLong() ?: 0L
+                } else {
+                    noteId = appDatabase.noteDao().insert(note)
+                }*/
+                if (noteId != -1L && noteImages.isNotEmpty()) {
                     appDatabase.noteImageDao().insert(noteImages)
-
                 }
-                val content = Html.fromHtml(note.body.toString(), Html.FROM_HTML_MODE_LEGACY)
-                if (noteId != 0L && pushCheckBox.isChecked) {
+                if (noteId != -1L && imageIdsToBeRemoved.isNotEmpty()) {
+                    appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
+                }
+                val content = Html.fromHtml(note.note.toString(), Html.FROM_HTML_MODE_LEGACY)
+                if (noteId != -1L && pushCheckBox.isChecked) {
                     val bigTextStyle = NotificationCompat.BigTextStyle()
                         .setBigContentTitle(note.title)
                         .bigText(content)
@@ -268,8 +271,14 @@ class CreateNoteActivity : AppCompatActivity() {
                     val notification = builder.build()
                     notificationManager.notify(noteId.toInt(), notification)
                 }
+                val intent = Intent(ctx, MainActivity::class.java)
+                if(noteId != -1L) {
+                    intent.putExtra("note", note)
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
+                }
             }
-        }
-    }
 
+
+    }
 }
