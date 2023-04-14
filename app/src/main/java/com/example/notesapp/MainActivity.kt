@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onItemClicked(note: Note) {
-        val intent = Intent(this@MainActivity, CreateNoteActivity::class.java)
+        val intent = Intent(this@MainActivity, UpdateNoteActivity::class.java)
         intent.putExtra("current_note", note)
         updateNote.launch(intent)
     }

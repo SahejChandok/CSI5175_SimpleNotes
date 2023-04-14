@@ -34,7 +34,7 @@ import kotlin.collections.ArrayList
 class CreateNoteActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
     private lateinit var binding: ActivityCreateNoteBinding
-    private var old_note: Note? = null
+    private lateinit var old_note: Note
     var isUpdate = false
     var changesSaved = false
     private lateinit var title: TextView
@@ -96,20 +96,7 @@ class CreateNoteActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        try {
-            old_note = (intent.getSerializableExtra("current_note") as? Note)!!
-            old_note!!.id?.let {
-                noteImages =
-                    appDatabase.noteImageDao().getAllForNote(it) as ArrayList<NoteImage>
-                binding.createNoteTitle.setText(old_note!!.title)
-                binding.createNoteBody.setText(
-                    SpannableString(Html.fromHtml(old_note!!.note,
-                        Html.FROM_HTML_MODE_LEGACY)))
-                isUpdate = true
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+
         val onClickImgClose: (NoteImage, Int) -> Unit = { noteImage: NoteImage, position: Int ->
             val imgId = noteImage.id
             if (imgId != null) {
@@ -241,7 +228,6 @@ class CreateNoteActivity : AppCompatActivity() {
     }
 
     private fun createNote() {
-        if (body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty()) {
             val str = SpannableStringBuilder(body.text)
             val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
             val note = Note(
@@ -253,12 +239,12 @@ class CreateNoteActivity : AppCompatActivity() {
             val ctx = this
             var noteId = 0L
             GlobalScope.launch(Dispatchers.IO) {
-                if (isUpdate) {
+                /*if (isUpdate) {
                     appDatabase.noteDao().update(old_note!!.id, note.title, note.note)
                     noteId = old_note!!.id?.toLong() ?: 0L
                 } else {
                     noteId = appDatabase.noteDao().insert(note)
-                }
+                }*/
                 if (noteId != -1L && noteImages.isNotEmpty()) {
                     appDatabase.noteImageDao().insert(noteImages)
                 }
@@ -292,7 +278,7 @@ class CreateNoteActivity : AppCompatActivity() {
                     finish()
                 }
             }
-        }
+
 
     }
 }

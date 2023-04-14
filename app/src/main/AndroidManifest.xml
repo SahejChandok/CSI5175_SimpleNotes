@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CreateNoteActivity"
+            android:name=".UpdateNoteActivity"
             android:exported="false" />
     </application>
 
