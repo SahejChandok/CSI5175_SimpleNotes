@@ -4,10 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.Html
+import android.text.SpannableString
 import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -132,6 +135,20 @@ class MainActivity : AppCompatActivity(),
             val intent = Intent(this, CreateNoteActivity::class.java)
             getContent.launch(intent)
 
+        }
+        binding.shareNotes.setOnClickListener {
+            try {
+                val intent = Intent()
+                intent.action = Intent.ACTION_SEND
+                intent.putExtra(Intent.EXTRA_TEXT, "${selectedNote.title}\n${selectedNote.date} \ncontent: ${  SpannableString(
+                    Html.fromHtml(selectedNote.note,
+                    Html.FROM_HTML_MODE_LEGACY))
+                }")
+                intent.type = "text/plain"
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Press and long hold to select a note", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.searchview.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
