@@ -1,6 +1,7 @@
 package com.example.notesapp
 
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -89,6 +90,7 @@ class CreateNoteActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Suppress("DEPRECATION")
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -186,27 +188,63 @@ class CreateNoteActivity : AppCompatActivity() {
                 body.selectionEnd,
                 0
             )
-            str.setSpan(
-                BackgroundColorSpan(Color.BLUE),
-                body.selectionStart,
-                body.selectionEnd,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
             body.text = str
         }
 
-        todoListButton.setOnClickListener {
-            var bulletStr = SpannableStringBuilder(body.text)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bulletStr.setSpan(
-                    BulletSpan(40, Color.BLUE, 20),
-                    body.selectionStart,
-                    body.selectionEnd,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+
+
+//        todoListButton.setOnClickListener{
+//            var startSelection: Int = body.selectionStart
+//            val endSelection: Int = body.selectionEnd
+//            val selectedText:String = body.text.substring(startSelection, endSelection)
+//            lateinit var textBefore:String
+//            lateinit var bulletCheck:String
+//            if (startSelection == 0){
+//                    textBefore = body.text.substring(0,0)
+//            } else (
+//                    textBefore = body.text.substring(0,10)
+//            )
+////            lateinit var bulletCheck:String
+////            if (startSelection <2){
+////                bulletCheck = "aa"
+////            } else{
+////                bulletCheck = body.text.substring(startSelection-3,startSelection-1)
+////            }
+//
+//            val textAfter:String = body.text.substring(endSelection,body.text.length)
+//            var str = SpannableStringBuilder(selectedText)
+//            var bulletHollow= "\u25CB "
+//            var result = str.contains(bulletHollow)
+//            if (result){
+//                val n = 2
+//                body.text = textBefore + str.substring(n) +textAfter
+//            } else {
+//                body.text = textBefore + bulletHollow + str +textAfter
+//            }
+//
+//        }
+
+        todoListButton.setOnClickListener{
+            val startSelection: Int = body.selectionStart
+            val endSelection: Int = body.selectionEnd
+            val selectedText:String = body.text.substring(startSelection, endSelection)
+            val textBefore:String = body.text.substring(0,startSelection)
+
+            val textAfter:String = body.text.substring(endSelection,body.text.length)
+            var str = SpannableStringBuilder(selectedText)
+            var bulletHollow= "\u25CB "
+            var result = str.contains(bulletHollow)
+            if (result){
+                val n = 2
+                body.text = textBefore + str.substring(n) +textAfter
+            } else {
+                body.text = textBefore + bulletHollow + str +"\u000A" +textAfter
             }
-            body.text = bulletStr
+
         }
+
+
+
         submitButton.setOnClickListener {
           createNote()
         }
