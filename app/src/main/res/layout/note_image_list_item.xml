@@ -14,10 +14,10 @@
 
     <ImageButton
         android:id="@+id/image_remove_btn"
-        android:layout_width="20sp"
-        android:layout_height="20sp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:scaleType="fitXY"
-        android:padding="5dp"
+        android:padding="10dp"
         android:layout_margin="0dp"
         android:layout_alignParentRight="true"
         app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
