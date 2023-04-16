@@ -3,4 +3,7 @@
   <item android:id="@+id/delete_note"
       android:title="Delete"
       />
+  <item android:id="@+id/share_note"
+      android:title="Share"
+      />
 </menu>

@@ -73,8 +73,9 @@
         android:layout_marginBottom="15dp"
         android:autofillHints="Share"
         android:background="@color/purple_500"
-        android:contentDescription="Share"
-        android:src="@drawable/ic_share"
+        android:contentDescription="Switch"
+        android:src="@drawable/switchs"
+        android:backgroundTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
