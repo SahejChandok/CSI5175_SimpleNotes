@@ -93,7 +93,7 @@
                 android:layout_width="40dp"
                 android:scaleType="fitCenter"
                 android:layout_weight="1"
-                app:srcCompat="@drawable/ic_checkbox" />
+                app:srcCompat="@drawable/ic_bullet" />
 
         </LinearLayout>
 
@@ -105,6 +105,7 @@
             android:ems="10"
             android:gravity="start"
             android:inputType="textMultiLine"
+            android:singleLine="false"
             android:maxLength="@integer/material_motion_duration_long_1"/>
 
         <androidx.recyclerview.widget.RecyclerView

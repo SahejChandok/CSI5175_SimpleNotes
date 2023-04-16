@@ -146,7 +146,7 @@ class CreateNoteActivity : AppCompatActivity() {
             body.text = str
 
         }
-        italicBtn.setOnClickListener {
+        underlineBtn.setOnClickListener {
             val str = SpannableStringBuilder(body.text)
             str.setSpan(UnderlineSpan(), body.selectionStart, body.selectionEnd, 0)
             body.text = str
