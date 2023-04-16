@@ -13,6 +13,6 @@ class activity_list (private val noteDao: NoteDao){
         noteDao.delete(note)
     }
     suspend fun update(note: Note){
-        noteDao.update(note.id, note.title, note.note)
+        noteDao.update(note)
     }
 }

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -15,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.*
 import android.text.style.*
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,7 +31,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class CreateNoteActivity : AppCompatActivity() {
@@ -59,10 +60,17 @@ class CreateNoteActivity : AppCompatActivity() {
     private val CHANNEL_ID = "notes_notifications"
     private lateinit var notificationManager: NotificationManager
     private val getImageContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            val noteImg = NoteImage(null, uri.toString(), null)
-            noteImages.add(noteImg)
-            noteImagesAdapter.update(noteImages)
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                if (result.data == null) return@registerForActivityResult
+                val uri = result.data!!.data!!
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                val noteImg = NoteImage(null, uri.toString(), null)
+                noteImages.add(noteImg)
+                noteImagesAdapter.update(noteImages)
+
+            }
+
         }
     private val bodyTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -132,7 +140,14 @@ class CreateNoteActivity : AppCompatActivity() {
         imagesRecyclerView.layoutManager = imagesViewManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         imageButton.setOnClickListener {
-            getImageContent.launch("image/*")
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                type = "image/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
+                flags = (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            }
+            getImageContent.launch(intent)
         }
         boldBtn.setOnClickListener {
             val str = SpannableStringBuilder(body.text)
@@ -246,7 +261,7 @@ class CreateNoteActivity : AppCompatActivity() {
 
 
         submitButton.setOnClickListener {
-          createNote()
+            createNote()
         }
         createNotificationChannel()
     }
@@ -266,57 +281,56 @@ class CreateNoteActivity : AppCompatActivity() {
     }
 
     private fun createNote() {
-            val str = SpannableStringBuilder(body.text)
-            val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
-            val note = Note(
-                null,
-                title.text.toString(),
-                Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),
-                formatter.format(Date())
-            )
-            val ctx = this
-            var noteId = 0L
-            GlobalScope.launch(Dispatchers.IO) {
-                /*if (isUpdate) {
-                    appDatabase.noteDao().update(old_note!!.id, note.title, note.note)
-                    noteId = old_note!!.id?.toLong() ?: 0L
-                } else {
-                    noteId = appDatabase.noteDao().insert(note)
-                }*/
-                if (noteId != -1L && noteImages.isNotEmpty()) {
-                    appDatabase.noteImageDao().insert(noteImages)
-                }
-                if (noteId != -1L && imageIdsToBeRemoved.isNotEmpty()) {
-                    appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
-                }
-                val content = Html.fromHtml(note.note.toString(), Html.FROM_HTML_MODE_LEGACY)
-                if (noteId != -1L && pushCheckBox.isChecked) {
-                    val bigTextStyle = NotificationCompat.BigTextStyle()
-                        .setBigContentTitle(note.title)
-                        .bigText(content)
-                    val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_link) // change this to icon
-                        .setContentTitle(note.title)
-                        .setContentText(content)
-                        .setStyle(bigTextStyle)
-                    if (noteImages.isNotEmpty()) {
-                        val img = noteImages[0]
-                        val imageStream =
-                            ctx.contentResolver.openInputStream(Uri.parse(img.uri.toString()))
-                        val imgBitmap = BitmapFactory.decodeStream(imageStream)
-                        builder.setLargeIcon(imgBitmap)
-                    }
-                    val notification = builder.build()
-                    notificationManager.notify(noteId.toInt(), notification)
-                }
-                val intent = Intent(ctx, MainActivity::class.java)
-                if(noteId != -1L) {
-                    intent.putExtra("note", note)
-                    setResult(Activity.RESULT_OK, intent)
-                    finish()
-                }
+        val str = SpannableStringBuilder(body.text)
+        val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+        val note = Note(
+            null,
+            title.text.toString(),
+            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),
+            formatter.format(Date()),
+            pushCheckBox.isChecked
+        )
+        val ctx = this
+        var noteId = 0L
+        GlobalScope.launch(Dispatchers.IO) {
+            noteId = appDatabase.noteDao().insert(note)
+            if (noteId != -1L && noteImages.isNotEmpty()) {
+                noteImages.forEach{ img -> img.noteId = noteId.toInt()}
+                val res = appDatabase.noteImageDao().insert(noteImages)
+                Log.d("IMG", "images inserted")
+                Log.d("IMG", noteImages.first().uri.toString())
+                Log.d("IMG", noteImages.first().noteId.toString())
+                Log.d("IMG", res.toString())
             }
-
-
+            if (noteId != -1L && imageIdsToBeRemoved.isNotEmpty()) {
+                appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
+            }
+            val content = Html.fromHtml(note.note.toString(), Html.FROM_HTML_MODE_LEGACY)
+            if (noteId != -1L && pushCheckBox.isChecked) {
+                val bigTextStyle = NotificationCompat.BigTextStyle()
+                    .setBigContentTitle(note.title)
+                    .bigText(content)
+                val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_link) // change this to icon
+                    .setContentTitle(note.title)
+                    .setContentText(content)
+                    .setStyle(bigTextStyle)
+                if (noteImages.isNotEmpty()) {
+                    val img = noteImages[0]
+                    val imageStream =
+                        ctx.contentResolver.openInputStream(Uri.parse(img.uri.toString()))
+                    val imgBitmap = BitmapFactory.decodeStream(imageStream)
+                    builder.setLargeIcon(imgBitmap)
+                }
+                val notification = builder.build()
+                notificationManager.notify(noteId.toInt(), notification)
+            }
+            val intent = Intent(ctx, MainActivity::class.java)
+            if(noteId != -1L) {
+                intent.putExtra("note", note)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
+        }
     }
 }

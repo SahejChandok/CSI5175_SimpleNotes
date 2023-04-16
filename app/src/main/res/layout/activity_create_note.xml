@@ -94,7 +94,13 @@
                 android:scaleType="fitCenter"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_bullet" />
-
+            <ImageButton
+                android:id="@+id/remove_format_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/remove_format" />
         </LinearLayout>
 
         <EditText

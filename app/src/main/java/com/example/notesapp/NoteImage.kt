@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class NoteImage (
     @PrimaryKey(autoGenerate = true) val id: Int?,
     val uri: String?,
-    val noteId: Int?
+    var noteId: Int?
 )

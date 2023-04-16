@@ -1,6 +1,7 @@
 package com.example.notesapp
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.view.LayoutInflater
@@ -40,6 +41,7 @@ class NoteImagesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val currentItem = noteImageList[position]
         val uri = Uri.parse(currentItem.uri)
+        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val imageStream = context.contentResolver.openInputStream(uri)
         val img = BitmapFactory.decodeStream(imageStream)
         holder.image.setImageBitmap(img)

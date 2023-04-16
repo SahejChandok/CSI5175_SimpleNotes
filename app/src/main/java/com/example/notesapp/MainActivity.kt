@@ -129,7 +129,11 @@ class MainActivity : AppCompatActivity(),
                     val note = result.data?.getSerializableExtra("note") as? Note
 
                     if (note != null) {
-                        viewModel.insertNote(note)
+//                        viewModel.insertNote(note)
+                        var updatedList = arrayListOf<Note>(note)
+                        var noteList = viewModel.allnotes.value as ArrayList<Note>
+                        updatedList.addAll(noteList)
+                        adapter.updateList(updatedList)
                     }
                 }
             }

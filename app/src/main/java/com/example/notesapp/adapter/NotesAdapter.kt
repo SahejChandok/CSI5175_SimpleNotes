@@ -70,12 +70,10 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
     }
 
     fun updateList(newList : List<Note>){
-
         fullList.clear()
         fullList.addAll(newList)
         NotesList.clear()
         NotesList.addAll(fullList)
-
         notifyDataSetChanged()
 
 
