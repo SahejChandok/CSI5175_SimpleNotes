@@ -287,17 +287,23 @@ class UpdateNoteActivity: AppCompatActivity() {
             binding.updateNoteBody.text = str
         }
 
-        todoListButton.setOnClickListener {
-            var bulletStr = SpannableStringBuilder(binding.updateNoteBody.text)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bulletStr.setSpan(
-                    BulletSpan(40, Color.BLUE, 20),
-                    binding.updateNoteBody.selectionStart,
-                    binding.updateNoteBody.selectionEnd,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+        todoListButton.setOnClickListener{
+            val startSelection: Int = binding.updateNoteBody.selectionStart
+            val endSelection: Int = binding.updateNoteBody.selectionEnd
+            val selectedText:String = binding.updateNoteBody.text.substring(startSelection, endSelection)
+            val textBefore:String = binding.updateNoteBody.text.substring(0,startSelection)
+
+            val textAfter:String = binding.updateNoteBody.text.substring(endSelection,body.text.length)
+            var str = SpannableStringBuilder(selectedText)
+            var bulletHollow= "\u25CB "
+            var result = str.contains(bulletHollow)
+            if (result){
+                val n = 2
+                binding.updateNoteBody.text = textBefore + str.substring(n) +textAfter
+            } else {
+                binding.updateNoteBody.text = textBefore + bulletHollow + str +"\u000A" +textAfter
             }
-            binding.updateNoteBody.text = bulletStr
+
         }
 
     }

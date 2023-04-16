@@ -88,14 +88,6 @@
                 android:scaleType="fitCenter"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_checkbox" />
-
-            <ImageButton
-                android:id="@+id/strike_button"
-                android:layout_height="40dp"
-                android:layout_width="40dp"
-                android:scaleType="fitCenter"
-                android:layout_weight="1"
-                app:srcCompat="@drawable/ic_box_finished" />
             <ImageButton
                 android:id="@+id/remove_format_button"
                 android:layout_height="40dp"
