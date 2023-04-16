@@ -44,6 +44,13 @@
                 android:layout_weight="1"
                 app:srcCompat="@drawable/italic_font" />
             <ImageButton
+                android:id="@+id/strike_button"
+                android:layout_height="40dp"
+                android:layout_width="40dp"
+                android:scaleType="fitCenter"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_strike" />
+            <ImageButton
                 android:id="@+id/underline_button"
                 android:layout_height="40dp"
                 android:layout_width="40dp"
@@ -88,20 +95,13 @@
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_checkbox" />
 
-            <ImageButton
-                android:id="@+id/strike_button"
-                android:layout_height="40dp"
-                android:layout_width="40dp"
-                android:scaleType="fitCenter"
-                android:layout_weight="1"
-                app:srcCompat="@drawable/ic_box_finished" />
         </LinearLayout>
 
         <EditText
             android:id="@+id/create_note_body"
             android:layout_width="match_parent"
             android:layout_height="400sp"
-            android:layout_marginTop="10sp"
+            android:layout_marginTop="30sp"
             android:ems="10"
             android:gravity="start"
             android:inputType="textMultiLine"
