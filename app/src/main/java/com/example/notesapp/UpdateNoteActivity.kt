@@ -3,20 +3,15 @@ package com.example.notesapp
 import android.app.Activity
 import android.app.Notification.Style
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.*
-import android.text.style.*
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.toSpannable
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.notesapp.databinding.ActivityCreateNoteBinding
 import com.example.notesapp.databinding.ActivityUpdateNoteBinding
 import kotlinx.coroutines.Dispatchers
@@ -29,47 +24,16 @@ import java.util.logging.SimpleFormatter
 class UpdateNoteActivity: AppCompatActivity() {
     private lateinit var binding: ActivityUpdateNoteBinding
     private lateinit var note:Note
-    private lateinit var body: TextView
     private lateinit var old_note: Note
     var isUpdate = false
     private lateinit var submitButton: Button
-    private lateinit var boldBtn: ImageButton
-    private lateinit var italicBtn: ImageButton
-    private lateinit var underlineBtn: ImageButton
-    private lateinit var centerAlignButton: ImageButton
-    private lateinit var leftAlignButton: ImageButton
-    private lateinit var rightAlignButton: ImageButton
-    private lateinit var todoListButton: ImageButton
-    private lateinit var todoCheckButton: ImageButton
-    private lateinit var pushCheckBox: CheckBox
-    private lateinit var imageButton: ImageButton
-    private var noteImages = arrayListOf<NoteImage>()
-    private var imageIdsToBeRemoved = arrayListOf<Int>()
-    private lateinit var imagesRecyclerView: RecyclerView
-    private lateinit var imagesViewManager: LinearLayoutManager
-    private lateinit var noteImagesAdapter: NoteImagesAdapter
-    private val getImageContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            val noteImg = NoteImage(null, uri.toString(), null)
-            noteImages.add(noteImg)
-            noteImagesAdapter.update(noteImages)
-        }
 
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         binding = ActivityUpdateNoteBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        body=binding.createNoteBody
-
-        val onClickImgClose: (NoteImage, Int) -> Unit = { noteImage: NoteImage, position: Int ->
-            val imgId = noteImage.id
-            if (imgId != null) {
-                imageIdsToBeRemoved.add(imgId)
-            }
-            noteImages.removeAt(position)
-            noteImagesAdapter.update(noteImages)
-        }
+        submitButton = findViewById(R.id.create_note_submit)
 
         try{
             old_note=intent.getSerializableExtra("current_note") as Note
@@ -80,6 +44,49 @@ class UpdateNoteActivity: AppCompatActivity() {
         }catch ( e : Exception){
             e.printStackTrace()
         }
+        submitButton.setOnClickListener{
+            val title= binding.createNoteTitle.text.toString()
+            val note_desc= binding.createNoteBody.text.toString()
+            if (title.isNotEmpty() || note_desc.isNotEmpty()){
+                val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+                if(isUpdate){
+                    note = Note(
+                        old_note.id, title, note_desc, formatter.format(Date())
+                    )
+                }else{
+                    note = Note(
+                        null, title, note_desc, formatter.format(Date())
+                    )
+                }
+                val intent= Intent()
+                intent.putExtra("note", note)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+
+            }else{
+                Toast.makeText(this@UpdateNoteActivity, "Please enter some data", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+        }
+
+    }
+    /*private lateinit var appDatabase: AppDatabase
+    private lateinit var title: TextView
+    private lateinit var body: TextView
+    private lateinit var submitButton: Button
+    private lateinit var boldBtn: ImageButton
+    private lateinit var italicBtn: ImageButton
+    private lateinit var underlineBtn: ImageButton
+    private lateinit var centerAlignButton: ImageButton
+    private lateinit var leftAlignButton: ImageButton
+    private lateinit var rightAlignButton: ImageButton
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_create_note)
+        appDatabase = AppDatabase.getDatabase(this)
+        title = findViewById(R.id.create_note_title)
+        body = findViewById(R.id.create_note_body)
         submitButton = findViewById(R.id.create_note_submit)
         boldBtn = findViewById(R.id.bold_button)
         underlineBtn = findViewById(R.id.underline_button)
@@ -87,29 +94,10 @@ class UpdateNoteActivity: AppCompatActivity() {
         centerAlignButton = findViewById(R.id.center_align_button)
         leftAlignButton = findViewById(R.id.left_align_button)
         rightAlignButton = findViewById(R.id.right_align_button)
-        todoListButton = findViewById(R.id.checklist_button)
-        todoCheckButton = findViewById(R.id.strike_button)
-        imageButton = findViewById(R.id.attach_image_button)
-        pushCheckBox = findViewById(R.id.add_note_to_push)
-        imagesRecyclerView = findViewById(R.id.images_view)
-        imagesRecyclerView.setHasFixedSize(true)
-        noteImagesAdapter = NoteImagesAdapter(this, noteImages, onClickImgClose)
-        imagesRecyclerView.adapter = noteImagesAdapter
-        imagesViewManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        imagesRecyclerView.layoutManager = imagesViewManager
-        imageButton.setOnClickListener {
-            getImageContent.launch("image/*")
-        }
         boldBtn.setOnClickListener {
             val str = SpannableStringBuilder(body.text)
             str.setSpan(StyleSpan(Typeface.BOLD), body.selectionStart, body.selectionEnd, 0)
             body.text = str
-            /* val str = SpannableStringBuilder(body.text)
-            var tempStr = body.text.toString()
-            var subStr = tempStr.subSequence(body.selectionStart, body.selectionEnd).toString()
-            tempStr.replace(subStr, "<strong>" + subStr + "</strong>")
-            str.setSpan(StyleSpan(Typeface.BOLD), body.selectionStart, body.selectionEnd, 0)
-            body.text = tempStr */
 
         }
         italicBtn.setOnClickListener {
@@ -118,7 +106,7 @@ class UpdateNoteActivity: AppCompatActivity() {
             body.text = str
 
         }
-        underlineBtn.setOnClickListener {
+        italicBtn.setOnClickListener {
             val str = SpannableStringBuilder(body.text)
             str.setSpan(UnderlineSpan(), body.selectionStart, body.selectionEnd, 0)
             body.text = str
@@ -151,65 +139,18 @@ class UpdateNoteActivity: AppCompatActivity() {
             body.textAlignment = textAlignment
             body.text = spannableStr
         }
-        todoCheckButton.setOnClickListener {
-            var str = SpannableStringBuilder(body.text)
-            str.setSpan(
-                StrikethroughSpan(),
-                body.selectionStart,
-                body.selectionEnd,
-                0
-            )
-            str.setSpan(
-                BackgroundColorSpan(Color.BLUE),
-                body.selectionStart,
-                body.selectionEnd,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            body.text = str
+        submitButton.setOnClickListener {
+            createNote()
+            val intent = Intent(this, MainActivity::class.java)
+            finish()
+            startActivity(intent)
         }
-
-        todoListButton.setOnClickListener {
-            var bulletStr = SpannableStringBuilder(body.text)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bulletStr.setSpan(
-                    BulletSpan(40, Color.BLUE, 20),
-                    body.selectionStart,
-                    body.selectionEnd,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-            body.text = bulletStr
-        }
-        submitButton.setOnClickListener{
-            val title= binding.createNoteTitle.text.toString()
-            val note_desc= binding.createNoteBody.text.toString()
-            if (title.isNotEmpty() || note_desc.isNotEmpty()){
-                val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
-                if(isUpdate){
-                    note = Note(
-                        old_note.id, title, note_desc, formatter.format(Date())
-                    )
-                }else{
-                    note = Note(
-                        null, title, note_desc, formatter.format(Date())
-                    )
-                }
-
-                val intent= Intent()
-                intent.putExtra("note", note)
-                setResult(Activity.RESULT_OK, intent)
-                finish()
-
-            }else{
-                Toast.makeText(this@UpdateNoteActivity, "Please enter some data", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-
-        }
-
     }
-    /*
+
+    override fun onDestroy() {
+        createNote()
+        super.onDestroy()
+    }
 
     private fun createNote() {
         if(body.text.toString().isNotEmpty() && title.text.toString().isNotEmpty())  {

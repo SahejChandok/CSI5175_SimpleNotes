@@ -4,16 +4,20 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.Html
+import android.text.SpannableString
 import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.notesapp.adapter.NotesAdapter
 import com.example.notesapp.databinding.ActivityMainBinding
@@ -28,6 +32,9 @@ class MainActivity : AppCompatActivity(),
     lateinit var viewModel: NoteViewModel
     lateinit var adapter: NotesAdapter
     lateinit var selectedNote: Note
+
+    private var flagSwitch:Boolean = false
+
     private val updateNote =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -114,7 +121,6 @@ class MainActivity : AppCompatActivity(),
         binding.noteList.layoutManager = StaggeredGridLayoutManager(2, LinearLayout.VERTICAL)
         adapter = NotesAdapter(this, this)
         binding.noteList.adapter = adapter
-
         val getContent =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
@@ -132,6 +138,28 @@ class MainActivity : AppCompatActivity(),
             val intent = Intent(this, CreateNoteActivity::class.java)
             getContent.launch(intent)
 
+        }
+
+        binding.shareNotes.setOnClickListener {
+            binding.shareNotes.animate().rotation(180f)
+            if(flagSwitch){
+                flagSwitch = false
+                binding.noteList.setHasFixedSize(true)
+                binding.noteList.layoutManager = StaggeredGridLayoutManager(2, LinearLayout.VERTICAL)
+                adapter = NotesAdapter(this, this)
+                binding.noteList.adapter = adapter
+            }else{
+                flagSwitch = true
+                binding.noteList.setHasFixedSize(true)
+                binding.noteList.layoutManager = LinearLayoutManager(this)
+                adapter = NotesAdapter(this, this)
+                binding.noteList.adapter = adapter
+            }
+            viewModel.allnotes.observe(this) { list ->
+                list?.let {
+                    adapter.updateList(list)
+                }
+            }
         }
 
         binding.searchview.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -173,6 +201,21 @@ class MainActivity : AppCompatActivity(),
             viewModel.deleteNote(selectedNote)
             return true
         }
+        if (item?.itemId == R.id.share_note) {
+            try {
+                val intent = Intent()
+                intent.action = Intent.ACTION_SEND
+                intent.putExtra(Intent.EXTRA_TEXT, "${selectedNote.title}\n${selectedNote.date} \ncontent: ${  SpannableString(Html.fromHtml(selectedNote.note,
+                    Html.FROM_HTML_MODE_LEGACY))
+                }")
+                intent.type = "text/plain"
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Press and long hold to select a note", Toast.LENGTH_SHORT).show()
+            }
+            return true
+        }
+
         return false
     }
 }
