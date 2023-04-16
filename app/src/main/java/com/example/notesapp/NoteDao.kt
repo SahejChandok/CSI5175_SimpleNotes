@@ -22,6 +22,6 @@ interface NoteDao {
     @Delete
     suspend fun delete(note: Note)
 
-    @Query("UPDATE notes_table Set title= :title, note = :note WHERE id =:id")
-    suspend fun update(id: Int?, title: String?, note: String?)
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun update(note: Note): Int
 }
