@@ -68,7 +68,9 @@ class CreateNoteActivity : AppCompatActivity() {
                 val noteImg = NoteImage(null, uri.toString(), null)
                 noteImages.add(noteImg)
                 noteImagesAdapter.update(noteImages)
-
+                if(noteImages.size == 1) {
+                    imagesRecyclerView.visibility = View.VISIBLE
+                }
             }
 
         }
@@ -114,6 +116,9 @@ class CreateNoteActivity : AppCompatActivity() {
             }
             noteImages.removeAt(position)
             noteImagesAdapter.update(noteImages)
+            if(noteImages.isEmpty()) {
+                imagesRecyclerView.visibility = View.GONE
+            }
         }
         setContentView(R.layout.activity_create_note)
         appDatabase = AppDatabase.getDatabase(this)
@@ -228,6 +233,9 @@ class CreateNoteActivity : AppCompatActivity() {
             createNote()
         }
         createNotificationChannel()
+        if(noteImages.isEmpty()) {
+            imagesRecyclerView.visibility = View.GONE
+        }
     }
 
     private fun createNotificationChannel() {

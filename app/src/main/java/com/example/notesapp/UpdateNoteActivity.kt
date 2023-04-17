@@ -61,6 +61,9 @@ class UpdateNoteActivity: AppCompatActivity() {
             val noteImg = NoteImage(null, uri.toString(), oldNote.id)
             noteImages.add(noteImg)
             noteImagesAdapter.update(noteImages)
+            if(noteImages.size == 1) {
+                imagesRecyclerView.visibility = View.VISIBLE
+            }
         }
     private val bodyTextWatcher = object : TextWatcher {
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -215,6 +218,9 @@ class UpdateNoteActivity: AppCompatActivity() {
             }
             noteImages.removeAt(position)
             noteImagesAdapter.update(noteImages)
+            if(noteImages.isEmpty()) {
+                imagesRecyclerView.visibility = View.GONE
+            }
         }
         noteImagesAdapter = NoteImagesAdapter(this, noteImages, onClickImgClose)
         imagesRecyclerView.adapter = noteImagesAdapter
@@ -304,6 +310,9 @@ class UpdateNoteActivity: AppCompatActivity() {
                 binding.updateNoteBody.setText(textBefore + bulletHollow + str +"\u000A" +textAfter)
             }
 
+        }
+        if(noteImages.isEmpty()) {
+            imagesRecyclerView.visibility = View.GONE
         }
 
     }
