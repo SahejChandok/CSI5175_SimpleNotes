@@ -258,7 +258,7 @@ class CreateNoteActivity : AppCompatActivity() {
         val note = Note(
             null,
             title.text.toString(),
-            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),
+            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL),
             formatter.format(Date()),
             pushCheckBox.isChecked
         )
