@@ -68,7 +68,9 @@ class CreateNoteActivity : AppCompatActivity() {
                 val noteImg = NoteImage(null, uri.toString(), null)
                 noteImages.add(noteImg)
                 noteImagesAdapter.update(noteImages)
-
+                if(noteImages.size == 1) {
+                    imagesRecyclerView.visibility = View.VISIBLE
+                }
             }
 
         }
@@ -114,6 +116,9 @@ class CreateNoteActivity : AppCompatActivity() {
             }
             noteImages.removeAt(position)
             noteImagesAdapter.update(noteImages)
+            if(noteImages.isEmpty()) {
+                imagesRecyclerView.visibility = View.GONE
+            }
         }
         setContentView(R.layout.activity_create_note)
         appDatabase = AppDatabase.getDatabase(this)
@@ -206,39 +211,6 @@ class CreateNoteActivity : AppCompatActivity() {
             body.text = str
         }
 
-
-
-//        todoListButton.setOnClickListener{
-//            var startSelection: Int = body.selectionStart
-//            val endSelection: Int = body.selectionEnd
-//            val selectedText:String = body.text.substring(startSelection, endSelection)
-//            lateinit var textBefore:String
-//            lateinit var bulletCheck:String
-//            if (startSelection == 0){
-//                    textBefore = body.text.substring(0,0)
-//            } else (
-//                    textBefore = body.text.substring(0,10)
-//            )
-////            lateinit var bulletCheck:String
-////            if (startSelection <2){
-////                bulletCheck = "aa"
-////            } else{
-////                bulletCheck = body.text.substring(startSelection-3,startSelection-1)
-////            }
-//
-//            val textAfter:String = body.text.substring(endSelection,body.text.length)
-//            var str = SpannableStringBuilder(selectedText)
-//            var bulletHollow= "\u25CB "
-//            var result = str.contains(bulletHollow)
-//            if (result){
-//                val n = 2
-//                body.text = textBefore + str.substring(n) +textAfter
-//            } else {
-//                body.text = textBefore + bulletHollow + str +textAfter
-//            }
-//
-//        }
-
         todoListButton.setOnClickListener{
             val startSelection: Int = body.selectionStart
             val endSelection: Int = body.selectionEnd
@@ -257,13 +229,13 @@ class CreateNoteActivity : AppCompatActivity() {
             }
 
         }
-
-
-
         submitButton.setOnClickListener {
             createNote()
         }
         createNotificationChannel()
+        if(noteImages.isEmpty()) {
+            imagesRecyclerView.visibility = View.GONE
+        }
     }
 
     private fun createNotificationChannel() {
@@ -297,10 +269,6 @@ class CreateNoteActivity : AppCompatActivity() {
             if (noteId != -1L && noteImages.isNotEmpty()) {
                 noteImages.forEach{ img -> img.noteId = noteId.toInt()}
                 val res = appDatabase.noteImageDao().insert(noteImages)
-                Log.d("IMG", "images inserted")
-                Log.d("IMG", noteImages.first().uri.toString())
-                Log.d("IMG", noteImages.first().noteId.toString())
-                Log.d("IMG", res.toString())
             }
             if (noteId != -1L && imageIdsToBeRemoved.isNotEmpty()) {
                 appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
@@ -311,10 +279,11 @@ class CreateNoteActivity : AppCompatActivity() {
                     .setBigContentTitle(note.title)
                     .bigText(content)
                 val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_link) // change this to icon
+                    .setSmallIcon(R.mipmap.ic_launcher_round) // change this to icon
                     .setContentTitle(note.title)
                     .setContentText(content)
                     .setStyle(bigTextStyle)
+                    .setAutoCancel(true)
                 if (noteImages.isNotEmpty()) {
                     val img = noteImages[0]
                     val imageStream =

@@ -118,7 +118,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/images_view"
             android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:layout_height="180dp" />
 
         <CheckBox
             android:layout_marginTop="10sp"

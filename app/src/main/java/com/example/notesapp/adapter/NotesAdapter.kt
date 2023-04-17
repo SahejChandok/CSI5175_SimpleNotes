@@ -51,7 +51,7 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
         holder.title.isSelected= true
         if(currentNote.note != null) {
             holder.nnote.text= SpannableString(Html.fromHtml(currentNote.note,
-                Html.FROM_HTML_MODE_LEGACY))
+                Html.FROM_HTML_MODE_COMPACT))
         }
         holder.date.text= currentNote.date
         holder.date.isSelected = true
