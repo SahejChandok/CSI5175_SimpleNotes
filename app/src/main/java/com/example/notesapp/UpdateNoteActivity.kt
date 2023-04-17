@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.*
 import android.text.style.*
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,7 +24,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.text.toSpannable
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.notesapp.databinding.ActivityCreateNoteBinding
 import com.example.notesapp.databinding.ActivityUpdateNoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -100,7 +100,7 @@ class UpdateNoteActivity: AppCompatActivity() {
 
         try{
             oldNote =intent.getSerializableExtra("current_note") as Note
-            val body = SpannableString(Html.fromHtml(oldNote.note, Html.FROM_HTML_MODE_LEGACY))
+            val body = SpannableString(Html.fromHtml(oldNote.note, Html.FROM_HTML_MODE_COMPACT))
             binding.updateNoteTitle.setText(oldNote.title.toString())
             binding.updateNoteBody.setText(body)
             val fetchedNoteImages = oldNote.id?.let { appDatabase.noteImageDao().getAllForNote(it) }
@@ -132,7 +132,7 @@ class UpdateNoteActivity: AppCompatActivity() {
                     if(isUpdate){
                         updatedNote = Note(
                             oldNote.id, title,
-                            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),
+                            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL),
                             formatter.format(Date()),
                             pushCheckBox.isChecked
                         )
@@ -151,7 +151,7 @@ class UpdateNoteActivity: AppCompatActivity() {
                         if(imageIdsToBeRemoved.isNotEmpty()) {
                             appDatabase.noteImageDao().deleteImages(imageIdsToBeRemoved)
                         }
-                        val content = Html.fromHtml(updatedNote.note.toString(), Html.FROM_HTML_MODE_LEGACY)
+                        val content = Html.fromHtml(updatedNote.note.toString(), Html.FROM_HTML_MODE_COMPACT)
                         val pendingIntent = Intent(ctx, UpdateNoteActivity::class.java)
                         pendingIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
                         pendingIntent.putExtra("current_note", updatedNote)
@@ -160,7 +160,7 @@ class UpdateNoteActivity: AppCompatActivity() {
                                 .setBigContentTitle(updatedNote.title)
                                 .bigText(content)
                             val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_link) // change this to icon
+                                .setSmallIcon(R.drawable.ic_note_notification) // change this to icon
                                 .setContentTitle(updatedNote.title)
                                 .setContentText(content)
                                 .setStyle(bigTextStyle)
@@ -179,7 +179,7 @@ class UpdateNoteActivity: AppCompatActivity() {
                             // update the notification
                             updatedNote.id?.let { it1 -> notificationManager.notify(it1, notification) }
                         } else {
-//                           // remove the notification
+//                          remove the notification
                             updatedNote.id?.let { it1 -> notificationManager.cancel(it1) }
                         }
 
@@ -292,16 +292,16 @@ class UpdateNoteActivity: AppCompatActivity() {
             val endSelection: Int = binding.updateNoteBody.selectionEnd
             val selectedText:String = binding.updateNoteBody.text.substring(startSelection, endSelection)
             val textBefore:String = binding.updateNoteBody.text.substring(0,startSelection)
-
-            val textAfter:String = binding.updateNoteBody.text.substring(endSelection,body.text.length)
+            val textAfter:String = binding.updateNoteBody.text.substring(endSelection,
+                binding.updateNoteBody.text.length)
             var str = SpannableStringBuilder(selectedText)
             var bulletHollow= "\u25CB "
             var result = str.contains(bulletHollow)
             if (result){
                 val n = 2
-                binding.updateNoteBody.text = textBefore + str.substring(n) +textAfter
+                binding.updateNoteBody.setText(textBefore + str.substring(n) +textAfter)
             } else {
-                binding.updateNoteBody.text = textBefore + bulletHollow + str +"\u000A" +textAfter
+                binding.updateNoteBody.setText(textBefore + bulletHollow + str +"\u000A" +textAfter)
             }
 
         }

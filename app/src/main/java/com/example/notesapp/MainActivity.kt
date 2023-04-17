@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity(),
                 val intent = Intent()
                 intent.action = Intent.ACTION_SEND
                 intent.putExtra(Intent.EXTRA_TEXT, "${selectedNote.title}\n${selectedNote.date} \ncontent: ${  SpannableString(Html.fromHtml(selectedNote.note,
-                    Html.FROM_HTML_MODE_LEGACY))
+                    Html.FROM_HTML_MODE_COMPACT))
                 }")
                 intent.type = "text/plain"
                 startActivity(intent)
