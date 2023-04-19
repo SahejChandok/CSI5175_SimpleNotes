@@ -57,6 +57,7 @@ class CreateNoteActivity : AppCompatActivity() {
     private lateinit var imagesRecyclerView: RecyclerView
     private lateinit var imagesViewManager: LinearLayoutManager
     private lateinit var noteImagesAdapter: NoteImagesAdapter
+    private lateinit var removeFormatButton: ImageButton
     private val CHANNEL_ID = "notes_notifications"
     private lateinit var notificationManager: NotificationManager
     private val getImageContent =
@@ -144,6 +145,7 @@ class CreateNoteActivity : AppCompatActivity() {
         imagesViewManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         imagesRecyclerView.layoutManager = imagesViewManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        removeFormatButton = findViewById(R.id.remove_format_button)
         imageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 type = "image/*"
@@ -229,6 +231,17 @@ class CreateNoteActivity : AppCompatActivity() {
             }
 
         }
+        removeFormatButton.setOnClickListener {
+            val str = SpannableStringBuilder(body.text)
+            var spans = str.getSpans(0, str.length, StyleSpan::class.java)
+            var strikeThrough = str.getSpans(0, str.length, StrikethroughSpan::class.java)
+            var underline = str.getSpans(0, str.length, UnderlineSpan::class.java)
+            spans.forEach { span -> str.removeSpan(span) }
+            strikeThrough.forEach { span -> str.removeSpan(span) }
+            underline.forEach { span -> str.removeSpan(span) }
+            body.textAlignment = TextView.TEXT_ALIGNMENT_INHERIT
+            body.text = str
+        }
         submitButton.setOnClickListener {
             createNote()
         }
@@ -255,10 +268,13 @@ class CreateNoteActivity : AppCompatActivity() {
     private fun createNote() {
         val str = SpannableStringBuilder(body.text)
         val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
+        var htmlStr = Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+        val alignment = getAlignmentStyle()
+        htmlStr = "<p style= 'text-align: $alignment'>$htmlStr</p>"
         val note = Note(
             null,
             title.text.toString(),
-            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL),
+            htmlStr,
             formatter.format(Date()),
             pushCheckBox.isChecked
         )
@@ -275,15 +291,22 @@ class CreateNoteActivity : AppCompatActivity() {
             }
             val content = Html.fromHtml(note.note.toString(), Html.FROM_HTML_MODE_LEGACY)
             if (noteId != -1L && pushCheckBox.isChecked) {
+                note.id = noteId.toInt()
+                val pendingIntent = Intent(ctx, UpdateNoteActivity::class.java)
+                pendingIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                pendingIntent.putExtra("current_note", note)
                 val bigTextStyle = NotificationCompat.BigTextStyle()
                     .setBigContentTitle(note.title)
                     .bigText(content)
                 val builder = NotificationCompat.Builder(ctx, CHANNEL_ID)
-                    .setSmallIcon(R.mipmap.ic_launcher_round) // change this to icon
+                    .setSmallIcon(R.drawable.ic_note_notification) // change this to icon
                     .setContentTitle(note.title)
                     .setContentText(content)
                     .setStyle(bigTextStyle)
                     .setAutoCancel(true)
+                    .setContentIntent(PendingIntent.getActivity(
+                        ctx, 0, pendingIntent, PendingIntent.FLAG_IMMUTABLE
+                    ))
                 if (noteImages.isNotEmpty()) {
                     val img = noteImages[0]
                     val imageStream =
@@ -301,5 +324,14 @@ class CreateNoteActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+    private fun getAlignmentStyle(): String {
+        val alignment = when (body.textAlignment) {
+            TextView.TEXT_ALIGNMENT_TEXT_END -> "right"
+            TextView.TEXT_ALIGNMENT_CENTER -> "center"
+            TextView.TEXT_ALIGNMENT_TEXT_START -> "left"
+            else -> "left"
+        }
+        return alignment
     }
 }

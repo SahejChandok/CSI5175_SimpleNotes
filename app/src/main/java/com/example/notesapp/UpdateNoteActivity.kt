@@ -28,6 +28,7 @@ import com.example.notesapp.databinding.ActivityUpdateNoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.logging.SimpleFormatter
@@ -103,6 +104,13 @@ class UpdateNoteActivity: AppCompatActivity() {
 
         try{
             oldNote =intent.getSerializableExtra("current_note") as Note
+            val html = Jsoup.parse(oldNote.note)
+            val pTags = html.getElementsByTag("p")
+            if(pTags.isNotEmpty()) {
+                var pTag = pTags[0]
+                val styleAttribute = pTag.attr("style")
+                getTextViewAlignment(styleAttribute)
+            }
             val body = SpannableString(Html.fromHtml(oldNote.note, Html.FROM_HTML_MODE_COMPACT))
             binding.updateNoteTitle.setText(oldNote.title.toString())
             binding.updateNoteBody.setText(body)
@@ -119,23 +127,42 @@ class UpdateNoteActivity: AppCompatActivity() {
         }
         binding.removeFormatButton.setOnClickListener {
             val str = SpannableStringBuilder(binding.updateNoteBody.text)
-            val spans = str.getSpans(0, str.length, Objects::class.java)
+            var spans = str.getSpans(0, str.length, StyleSpan::class.java)
+            var strikeThrough = str.getSpans(0, str.length, StrikethroughSpan::class.java)
+            var underline = str.getSpans(0, str.length, UnderlineSpan::class.java)
             spans.forEach { span -> str.removeSpan(span) }
+            strikeThrough.forEach { span -> str.removeSpan(span) }
+            underline.forEach { span -> str.removeSpan(span) }
+            binding.updateNoteBody.textAlignment = TextView.TEXT_ALIGNMENT_INHERIT
             binding.updateNoteBody.text = str
         }
         submitButton.setOnClickListener{
             val title= binding.updateNoteTitle.text.toString()
-            val note_desc= binding.updateNoteBody.text.toString()
+            val note_desc= binding.updateNoteBody.text
             var result = 0
             if (title.isNotEmpty() && note_desc.isNotEmpty()){
                 val formatter = SimpleDateFormat("EEE, d MMM yyyy HH:mm a")
                 val str = SpannableStringBuilder(note_desc)
+                var stringifyHtml = Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL)
+                val html = Jsoup.parse(Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL))
+                val pTags = html.getElementsByTag("p")
+                if(pTags.isNotEmpty()) {
+                    var pTag = pTags[0]
+                    val styleAttribute = pTag.attr("style")
+//                    getTextViewAlignment(styleAttribute)
+                    if(styleAttribute.contains("text-align:", ignoreCase = true)) {
+                        pTag.attr("style", "text-align: ${getAlignmentStyle()}")
+                        stringifyHtml = html.toString()
+                    } else {
+                        stringifyHtml = "<p style='text-align: ${getAlignmentStyle()}'>$stringifyHtml</p>"
+                    }
+                }
                 val ctx = this
                 GlobalScope.launch(Dispatchers.IO) {
                     if(isUpdate){
                         updatedNote = Note(
                             oldNote.id, title,
-                            Html.toHtml(str, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL),
+                            stringifyHtml,
                             formatter.format(Date()),
                             pushCheckBox.isChecked
                         )
@@ -156,7 +183,7 @@ class UpdateNoteActivity: AppCompatActivity() {
                         }
                         val content = Html.fromHtml(updatedNote.note.toString(), Html.FROM_HTML_MODE_COMPACT)
                         val pendingIntent = Intent(ctx, UpdateNoteActivity::class.java)
-                        pendingIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        pendingIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                         pendingIntent.putExtra("current_note", updatedNote)
                         if (pushCheckBox.isChecked) {
                             val bigTextStyle = NotificationCompat.BigTextStyle()
@@ -284,12 +311,6 @@ class UpdateNoteActivity: AppCompatActivity() {
                 binding.updateNoteBody.selectionEnd,
                 0
             )
-            str.setSpan(
-                BackgroundColorSpan(Color.BLUE),
-                binding.updateNoteBody.selectionStart,
-                binding.updateNoteBody.selectionEnd,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
             binding.updateNoteBody.text = str
         }
 
@@ -315,6 +336,27 @@ class UpdateNoteActivity: AppCompatActivity() {
             imagesRecyclerView.visibility = View.GONE
         }
 
+    }
+    private fun getAlignmentStyle(): String {
+        val alignment = when (binding.updateNoteBody.textAlignment) {
+            TextView.TEXT_ALIGNMENT_TEXT_END -> "right"
+            TextView.TEXT_ALIGNMENT_CENTER -> "center"
+            TextView.TEXT_ALIGNMENT_TEXT_START -> "left"
+            else -> "left"
+        }
+        return alignment
+    }
+    private fun getTextViewAlignment(styleAttribute: String) {
+        when {
+                styleAttribute.contains("text-align: left", ignoreCase = true) -> binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+                styleAttribute.contains("text-align: right", ignoreCase = true) -> binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
+                styleAttribute.contains("text-align: center", ignoreCase = true) -> binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                styleAttribute.contains("text-align: start", ignoreCase = true) -> binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                styleAttribute.contains("text-align: end", ignoreCase = true) -> binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_VIEW_END
+            else -> {
+                binding.updateNoteBody.textAlignment = View.TEXT_ALIGNMENT_INHERIT
+            }
+        }
     }
 
 }
