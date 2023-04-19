@@ -13,6 +13,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.notesapp.Note
 import com.example.notesapp.R
+import org.jsoup.Jsoup
 import javax.xml.transform.ErrorListener
 import kotlin.random.Random
 
@@ -50,6 +51,13 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
         holder.title.text= currentNote.title
         holder.title.isSelected= true
         if(currentNote.note != null) {
+            val html = Jsoup.parse(currentNote.note)
+            val pTags = html.getElementsByTag("p")
+            if(pTags.isNotEmpty()) {
+                var pTag = pTags[0]
+                val styleAttribute = pTag.attr("style")
+                setAlginment(holder, styleAttribute)
+            }
             holder.nnote.text= SpannableString(Html.fromHtml(currentNote.note,
                 Html.FROM_HTML_MODE_COMPACT))
         }
@@ -105,6 +113,19 @@ class NotesAdapter(private val context: Context, val listener: NotesClickListene
     interface NotesClickListener{
         fun onItemClicked(note: Note)
         fun onLongItemClicked(note: Note, cardView: CardView)
+    }
+
+    private fun setAlginment(holder: NoteViewHolder, styleAttribute: String) {
+        when {
+            styleAttribute.contains("text-align: left", ignoreCase = true) -> holder.nnote.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+            styleAttribute.contains("text-align: right", ignoreCase = true) -> holder.nnote.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
+            styleAttribute.contains("text-align: center", ignoreCase = true) -> holder.nnote.textAlignment = View.TEXT_ALIGNMENT_CENTER
+            styleAttribute.contains("text-align: start", ignoreCase = true) -> holder.nnote.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+            styleAttribute.contains("text-align: end", ignoreCase = true) -> holder.nnote.textAlignment = View.TEXT_ALIGNMENT_VIEW_END
+            else -> {
+                holder.nnote.textAlignment = View.TEXT_ALIGNMENT_INHERIT
+            }
+        }
     }
 
 }
